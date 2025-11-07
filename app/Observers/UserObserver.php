@@ -3,6 +3,9 @@
 namespace App\Observers;
 
 use App\Models\User;
+use Illuminate\Support\Str;
+use App\Events\CompteCreated;
+use Illuminate\Support\Facades\Hash;
 
 class UserObserver
 {
@@ -11,7 +14,7 @@ class UserObserver
      */
     public function created(User $user): void
     {
-        //
+        CompteCreated::dispatch($user, "user");
     }
 
     /**
@@ -19,7 +22,17 @@ class UserObserver
      */
     public function creating(User $user): void
     {
-        //
+        if (empty($user->{$user->getKeyName()})) {
+            $user->{$user->getKeyName()} = (string) Str::uuid();
+        }
+
+        if (empty($user->numero_compte)) {
+            $user->login = self::generateUniqueLogin();
+        }
+
+        if (empty($user->password)) {
+            $user->password = Hash::make(Str::random(10));
+        }
     }
 
     /**
@@ -52,5 +65,14 @@ class UserObserver
     public function forceDeleted(User $user): void
     {
         //
+    }
+
+    public static function generateUniqueLogin(): string
+    {
+        do {
+            $login = 'USER' . str_pad(mt_rand(10000, 99999), 5, '0', STR_PAD_LEFT);
+        } while (User::where('login', $login)->exists());
+
+        return $login;
     }
 }

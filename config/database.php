@@ -16,6 +16,8 @@ return [
     */
 
     'default' => env('DB_CONNECTION', 'mysql'),
+    'repository_driver' => env('REPOSITORY_DRIVER', 'eloquent'),
+
 
     /*
     |--------------------------------------------------------------------------
